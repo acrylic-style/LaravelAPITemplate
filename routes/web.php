@@ -1,5 +1,7 @@
 <?php
 
+require('functions.php');
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -13,4 +15,19 @@
 
 Route::get('/', function () {
     return view('welcome');
+});
+
+Route::any('/error/{error?}', function (Request $request, $error = 500) {
+    return response()->json(["error" => "There was an error while processing your request.", "status" => (int) $error], (int) $error);
+});
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');
+
+Route::get('/redirect', 'Auth\LoginController@redirectToProvider');
+Route::get('/callback', 'Auth\LoginController@handleProviderCallback');
+
+Route::get('/registermc', function (Request $request) {
+    return view('registermc');
 });
