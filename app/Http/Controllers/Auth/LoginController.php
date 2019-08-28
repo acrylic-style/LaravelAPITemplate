@@ -44,7 +44,15 @@ class LoginController extends Controller
       */
     public function redirectToProvider()
     {
-        return \Socialite::driver('google')->redirect();
+        $client = new \Google_Client();
+        $client->setApplicationName('Sponsor Checker');
+        $client->setScopes([
+            'https://www.googleapis.com/auth/youtube.readonly',
+        ]);
+        $client->setAuthConfig('../../../../client_secret.json');
+        $client->setAccessType('offline');
+        $authUrl = $client->createAuthUrl();
+        return redirect($authUrl);
     }
 
     /**
@@ -57,10 +65,13 @@ class LoginController extends Controller
         try {
             $user = \Socialite::driver('google')->user();
         } catch (\Exception $e) {
-            return redirect('/error/500');
+            return redirect('/redirect');
         }
-        session(["access_token" => $user->token]);
-        session(["refresh_token" => $user->refreshToken]);
+        //Socialite::shouldReceive('driver')->with($this->providerName)->andReturn($this->provider);
+        $luser = \User::where(['email' => $user->email])->firstOrFail();
+        //$luser = User::where(['email' => $this->user->getEmail()])->firstOrFail();
+        $luser->access_token = $user->token;
+        $luser->refresh_token = $user->refreshToken;
         return redirect()->to('/registermc'); // not api
     }
 }
